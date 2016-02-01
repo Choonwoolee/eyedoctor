@@ -1,0 +1,309 @@
+<!doctype html>
+<html  ng-app="app">
+<head>
+  <meta charset="utf-8">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, target-densitydpi=medium-dpi, user-scalable=0" />
+  <title>P&H Research</title>  
+  
+  <link rel="stylesheet" href="lib/onsen/css/onsenui.css">  
+  <link rel="stylesheet" href="lib/onsen/css/onsen-css-components.css">  
+   
+  <script src="lib/onsen/js/angular/angular.js"></script>    
+  <script src="lib/onsen/js/onsenui.js"></script>    
+  <script src="js/common.js"></script>   
+  <script src="js/angular-gettext.min.js"></script>  
+  <script src="js/translations.js"></script>  
+  <script src="js/hammer.min.js"></script>  
+  <script src="js/angular.hammer.min.js"></script>  
+  <script src="cordova.js"></script>
+  <script src="js/app.js"></script> 
+
+  <script type="text/javascript">
+
+   
+    var degree = 0;
+    var rotate = function(num,isNorthern){
+          degree += parseInt(num);
+          var rotate_degree = degree;
+          if(isNorthern == 1){
+            rotate_degree = (-1) * degree;
+            
+          }
+          document.getElementById("myCanvas1").style.WebkitTransform = "rotate("+rotate_degree+"deg)";
+          document.getElementById("myCanvas2").style.WebkitTransform = "rotate("+rotate_degree+"deg)";
+           
+           //console.debug(document.getElementById("myCanvas1").style.WebkitTransform );
+        if (degree > 360 ){
+             degree = 0;
+        }
+      };
+    var time = 0;
+    
+    
+    angular.module('app', ['onsen','gettext','hmTouchEvents']);
+
+    angular.module('app').controller('AppController', ['$scope',function($scope,$swipe) {
+      $scope.rotateTimer;
+      $scope.moveCircleTimer;
+      $scope.image_move_top = 0;
+      $scope.move_circle_interval = 10;
+      var imgrotate1 = document.getElementById("imgrotate1");
+      var imgrotate2 = document.getElementById("imgrotate2");
+      $scope.imagerotate1_top = 0;
+      $scope.imagerotate2_top = 0;
+
+      $scope.movie_circle_gap = Math.PI / 100;
+
+      // console.debug("i1:"+$scope.imagerotate1_top );
+      // console.debug("i2:"+$scope.imagerotate2_top );
+      // console.debug(imgrotate2.offsetTop);
+      // console.debug(imgrotate1.clientTop);
+      // console.debug(imgrotate2.clientTop);
+      $scope.stop = function(){
+        location.href="index.html"
+      };
+      $scope.drawSpiral = function(lineWidth,isNorthern,canvas){
+         var canvas = document.getElementById(canvas);
+        var context = canvas.getContext("2d");
+
+        var radius = 0;
+        var angle = 0;
+        context.clearRect(0, 0, canvas.width, canvas.height);
+        context.lineWidth = lineWidth;
+        context.strokeStyle = "#00FF00"; 
+        context.beginPath();
+        context.moveTo(canvas.width / 2, canvas.height / 2);
+        for (var n = 0; n < 1600; n++) {
+          radius += 0.05;
+          angle += (Math.PI * 2) / 50;
+          if(isNorthern==0){
+            var x = canvas.width / 2 + radius * Math.sin(angle) ;
+            var y = canvas.height / 2 + radius * Math.cos(angle) ;
+            context.lineTo(x, y);
+           }else{
+            var x = canvas.width / 2 + radius * Math.cos(angle) ;
+            var y = canvas.height / 2 + radius * Math.sin(angle) ; 
+            context.lineTo(x, y);
+           } 
+          
+        }
+        context.stroke();
+      }
+      $scope.init = function(){ 
+        
+        $scope.drawSpiral(1,isNorthern(),"myCanvas1");
+        $scope.drawSpiral(1,isNorthern(),"myCanvas2");
+        $scope.initCircleWithSavedPosition();
+        $scope.rotateTimer = setInterval( function(){ rotate(10,isNorthern()); }, 2);
+        $scope.moveCircleTimer = setInterval( function(){ $scope.moveCircle(); }, $scope.move_circle_interval);
+      }
+      $scope.resetRotate = function(){
+        clearInterval($scope.rotateTimer);
+
+        $scope.drawSpiral(1,isNorthern(),"myCanvas1");
+        $scope.drawSpiral(1,isNorthern(),"myCanvas2");
+        $scope.rotateTimer = setInterval( function(){ rotate(10,isNorthern()); }, 2);
+     
+      }
+      $scope.onChangeWidth = function(event){
+        var event_type = event.type;
+
+
+        if(event_type =="panstart"){
+          clearInterval($scope.moveCircleTimer);
+          $scope.imagerotate1_top = imgrotate1.offsetTop;
+          $scope.imagerotate2_top = imgrotate2.offsetTop - 160;
+
+          
+        }else if(event_type =="panmove"){
+
+          var y = event.deltaY/10;
+          var range = $scope.imagerotate2_top - $scope.imagerotate1_top ;
+
+          var image1_top =($scope.imagerotate1_top+y);
+          var image2_top = ($scope.imagerotate2_top - y)
+          if(image1_top - $scope.image_move_top > 50){
+            image1_top = 50 + $scope.image_move_top; 
+          }
+          if(image2_top - $scope.image_move_top > 120){
+            image2_top = 120 + $scope.image_move_top; 
+          }
+         if(image1_top - $scope.image_move_top < -120){
+            image1_top = -120 + $scope.image_move_top; 
+          }
+          if(image2_top - $scope.image_move_top < - 50){
+            image2_top = -50 + $scope.image_move_top; 
+          }
+
+          imgrotate1.style.top = image1_top+"px";
+          imgrotate2.style.top = image2_top+"px";
+         
+        }else if(event_type=="panend"){
+          $scope.imagerotate1_top = imgrotate1.offsetTop - $scope.image_move_top;
+          $scope.imagerotate2_top = imgrotate2.offsetTop - 160 - $scope.image_move_top;
+
+          //console.debug("b_image1:"+$scope.imagerotate1_top );
+          //console.debug("b_image2:"+$scope.imagerotate2_top );
+          $scope.moveCircleTimer = setInterval( function(){ $scope.moveCircle(); }, $scope.move_circle_interval);
+          var range =  imgrotate2.offsetTop - imgrotate1.offsetTop ;
+          setRotatePosition(range);
+         // console.debug("range"+range);
+          
+        
+        }
+      }
+
+      $scope.moveCircle = function(){
+        
+        if( time < Math.PI * 2){
+          var left= ( Math.sin(time) * 50 );
+          var top= ( Math.cos(time) * 50 - 50) ;
+        }else{
+          var left= ( Math.sin(time) * 50 );
+          var top= ( Math.cos(time) * 50 * -1  + 50);
+        
+        }
+        time = time + $scope.movie_circle_gap;
+        if(time > Math.PI * 4){
+          time = 0;
+        }
+        //console.debug(time);
+        //console.debug("a_image1:"+$scope.imagerotate1_top );
+        //console.debug("a_image2:"+$scope.imagerotate2_top );
+        $scope.image_move_top = top;
+        var imgrotate1 = document.getElementById("imgrotate1");
+        var imgrotate2 = document.getElementById("imgrotate2");
+         imgrotate1.style.top = $scope.imagerotate1_top + top+"px";
+         imgrotate1.style.left = left +"px";
+         imgrotate2.style.top = ($scope.imagerotate2_top) + top+"px";
+         imgrotate2.style.left = left+"px";
+      }
+
+      $scope.initCircleWithSavedPosition = function(){
+         var savedRotatePosition = getRotatePosition();
+         if(savedRotatePosition){
+         // console.debug("init");
+          var top1 = (160 - savedRotatePosition) /2;
+          var top2 = -1 * (160 - savedRotatePosition) /2; 
+          var imgrotate1 = document.getElementById("imgrotate1");
+          var imgrotate2 = document.getElementById("imgrotate2");
+          imgrotate1.style.top = top1+"px";
+          imgrotate2.style.top = top2+"px";
+          $scope.imagerotate1_top = imgrotate1.offsetTop;
+          $scope.imagerotate2_top = imgrotate2.offsetTop - 160;
+         
+        }
+      }
+
+
+    }]);
+    angular.module('app').run(function (gettextCatalog) {
+      try{
+        var language = getLocale();
+        gettextCatalog.setCurrentLanguage(language);
+        gettextCatalog.debug = true;
+      }catch(e){
+        console.debug(e);
+      }
+   });
+  function onDeviceReady() {
+
+      if(AdMob) AdMob.removeBanner();
+      alert(Media);
+      var media = new Media("/android_asset/www/ding.mp3", function(){alert("ok");}, function(){alert("fail");});
+
+   }
+
+  document.addEventListener('deviceready',onDeviceReady , false);
+  
+
+  </script>
+
+  <style>
+    .page__background {
+      background-color: #000;
+    }
+    .topbar{
+      position: absolute; top: 0px; left: 0px; right:0px; height: 9px;background-color: rgb(39, 174, 96);
+    }
+    .bottombar{
+      position: absolute; bottom: 0px; left: 0px; right:0px; height: 9px;background-color: rgb(39, 174, 96);
+    }
+    .container1{
+      width:100%;
+      height:100%;
+      margin-left: auto;
+      margin-right: auto;
+      text-align:center;
+      -webkit-transform-style: preserve-3d;
+      -moz-transform-style: preserve-3d;
+      transform-style: preserve-3d;
+    }
+    .container2 {
+      position: relative;
+
+      top: 50%;
+      transform: translateY(-50%);
+      -webkit-transform: translateY(-50%);
+      -ms-transform: translateY(-50%);
+    }
+    .closebutton{
+        right:0px;
+        bottom:0px;
+        position: absolute;
+        margin-bottom: 10px;
+    }
+    .intro{
+      position: absolute;
+      left:0;
+      right:0;
+      margin-top: 20px;
+      text-align: center;
+      font-weight: bold; font-size: 20px; 
+      color: rgb(127, 127, 127);
+    }
+    .stopbutton{
+       font-weight: bold; font-size: 20px; 
+      color: rgb(127, 127, 127);
+    }
+    .imgrotate1{
+      position: relative;
+      height: 160px;
+      top:0px;
+    }
+    .imgrotate2{
+      position: relative;
+      height: 160px;
+      top:0px;
+    }
+    #myCanvas1{
+    }
+  </style>
+  
+</head>
+
+<body ng-controller="AppController" data-ng-init="init()"  hm-pan="onChangeWidth" hm-panmove="onChangeWidth" hm-panstart="onChangeWidth" hm-panend="onChangeWidth">    
+<ons-page class=".black">
+  
+
+
+  <div class="container1">
+    <div class="container2">
+    <div class="imgrotate1" id="imgrotate1">
+      <canvas id="myCanvas1" width="160" height="160">
+      </canvas>
+    </div>
+    <div class="imgrotate2" id="imgrotate2">
+      <canvas id="myCanvas2" width="160" height="160">
+      </canvas>
+    </div>
+  </div>
+    <div class="closebutton">
+        <ons-button class="stopbutton" modifier="quiet" ng-click="stop()">Home</ons-button>
+    </div>
+  </div>
+</ons-page>   
+</body>
+</html>

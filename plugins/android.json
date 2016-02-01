@@ -1,0 +1,51 @@
+{
+    "prepare_queue": {
+        "installed": [],
+        "uninstalled": []
+    },
+    "config_munge": {
+        "files": {}
+    },
+    "installed_plugins": {
+        "com.ionic.keyboard": {
+            "PACKAGE_NAME": "com.phrll.eyedoctor"
+        },
+        "cordova-plugin-admobpro": {
+            "PACKAGE_NAME": "com.phrll.eyedoctor"
+        },
+        "cordova-plugin-console": {
+            "PACKAGE_NAME": "com.phrll.eyedoctor"
+        },
+        "cordova-plugin-device": {
+            "PACKAGE_NAME": "com.phrll.eyedoctor"
+        },
+        "cordova-plugin-extension": {
+            "PACKAGE_NAME": "com.phrll.eyedoctor"
+        },
+        "cordova-plugin-file": {
+            "PACKAGE_NAME": "com.phrll.eyedoctor"
+        },
+        "cordova-plugin-media": {
+            "PACKAGE_NAME": "com.phrll.eyedoctor"
+        },
+        "cordova-plugin-network-information": {
+            "PACKAGE_NAME": "com.phrll.eyedoctor"
+        },
+        "cordova-plugin-statusbar": {
+            "PACKAGE_NAME": "com.phrll.eyedoctor"
+        },
+        "cordova-plugin-whitelist": {
+            "PACKAGE_NAME": "com.phrll.eyedoctor"
+        },
+        "nl.x-services.plugins.insomnia": {
+            "PACKAGE_NAME": "com.phrll.eyedoctor"
+        },
+        "org.apache.cordova.inappbrowser": {
+            "PACKAGE_NAME": "com.phrll.eyedoctor"
+        },
+        "phonegap-plugin-mobile-accessibility": {
+            "PACKAGE_NAME": "com.phrll.eyedoctor"
+        }
+    },
+    "dependent_plugins": {}
+}
